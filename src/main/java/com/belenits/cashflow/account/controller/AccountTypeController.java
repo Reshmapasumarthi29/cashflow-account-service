@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.belenits.cashflow.account.dto.response.AccountTypeCountResponse;
 import com.belenits.cashflow.account.dto.response.BaseResponse;
-import com.belenits.cashflow.account.security.JwtUtil;
+import com.belenits.cashflow.account.security.JwtService;
+import com.belenits.cashflow.account.security.Permissions;
 import com.belenits.cashflow.account.service.AccountTypeCountService;
 import com.belenits.cashflow.account.util.CorrelationIdUtil;
 
@@ -28,15 +30,16 @@ public class AccountTypeController {
 
 	private final AccountTypeCountService accountTypeService;
 	
-	private final JwtUtil jwtUtil;
+	private final JwtService jwtService;
 	
 	
 	
 	
 	@GetMapping("/counts")
+	@PreAuthorize("hasAuthority('" + Permissions.ACCOUNT_VIEW + "')")
 	public ResponseEntity<BaseResponse<List<AccountTypeCountResponse>>> getAccountTypeCount(@RequestHeader("Authorization") String authHeader){
 	
-		Long userId = jwtUtil.extractUserId(authHeader);
+		Long userId = jwtService.extractUserId(authHeader);
 		
 		
 		log.info("GET /api/v1/account-types/{}/counts - request received", userId);

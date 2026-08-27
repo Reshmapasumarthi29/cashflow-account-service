@@ -3,6 +3,7 @@ package com.belenits.cashflow.account.controller;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.belenits.cashflow.account.dto.response.AccountDetailResponse;
 import com.belenits.cashflow.account.dto.response.AccountOverviewResponse;
 import com.belenits.cashflow.account.dto.response.BaseResponse;
-import com.belenits.cashflow.account.security.JwtUtil;
+import com.belenits.cashflow.account.security.JwtService;
+import com.belenits.cashflow.account.security.Permissions;
 import com.belenits.cashflow.account.service.AccountDetailService;
 import com.belenits.cashflow.account.service.AccountOverviewService;
 import com.belenits.cashflow.account.util.CorrelationIdUtil;
@@ -33,14 +35,15 @@ public class AccountReadController {
 	
 	private final AccountDetailService accountDetailService;
 	
-	private final JwtUtil jwtUtil;
+	private final JwtService jwtService;
 	
 	
 	@GetMapping("/overview")
+	@PreAuthorize("hasAuthority('" + Permissions.ACCOUNT_VIEW + "')")
 	public ResponseEntity<BaseResponse<AccountOverviewResponse>> getAccountOverview(@RequestHeader("Authorization") String authHeader){
 		
 		
-		Long userId = jwtUtil.extractUserId(authHeader);
+		Long userId = jwtService.extractUserId(authHeader);
 		
 		log.info("GET /api/v1/accounts/{}/overview - request received", userId);
 
@@ -63,10 +66,11 @@ public class AccountReadController {
 	
 	
     @GetMapping("/{accountId}")
+    @PreAuthorize("hasAuthority('" + Permissions.ACCOUNT_VIEW + "')")
     public ResponseEntity<BaseResponse<AccountDetailResponse>> getAccountDetail(@PathVariable("accountId")@Positive Long accountId,
     		                                                                   @RequestHeader("Authorization") String authHeader) {
 
-    	Long userId = jwtUtil.extractUserId(authHeader);
+    	Long userId = jwtService.extractUserId(authHeader);
     	
     	log.info("GET /api/v1/accounts/{}?userId={} - request received", accountId, userId);
     	
